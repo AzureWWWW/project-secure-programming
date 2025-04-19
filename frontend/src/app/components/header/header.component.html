@@ -1,0 +1,41 @@
+
+
+<nav class="navbar navbar-expand-lg bg-body-tertiary">
+  <div class="container-fluid">
+    <a class="navbar-brand">HospitalApp</a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarNav">
+      <ul class="navbar-nav me-auto">
+        <li class="nav-item">
+          <a class="nav-link active" aria-current="page" routerLink="home">Home</a>
+        </li>
+        <li class="nav-item"  *ngIf="isAdmin">
+          <a class="nav-link" routerLink = "/Appointments_Admin_View"> Appointments</a>
+        </li>
+        <li class="nav-item"  *ngIf="isAdmin">
+          <a class="nav-link" routerLink = "/Patients_Admin_View">Patients</a>
+        </li>
+        <li class="nav-item"  *ngIf="isAdmin">
+          <a class="nav-link" routerLink="/Doctors_Admin_View">Doctors</a>
+        </li>
+        <li class="nav-item"  *ngIf="isDoctor">
+          <a class="nav-link" routerLink="/Appointments_Doctor_View">Appointments</a>
+        </li>
+        <li class="nav-item"  *ngIf="isPatient">
+          <a class="nav-link" routerLink="/Appointments_Patient_View">Appointments</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" routerLink="/my_Profile">My Profile</a>
+        </li>
+      </ul>
+      <form class="d-flex" >
+        <button class="btn btn-primary" type="button" (click)="onLogOff()">Log out</button>
+      </form>
+    </div>
+  </div>
+</nav>
+
+
+<router-outlet></router-outlet>

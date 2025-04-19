@@ -1,0 +1,17 @@
+<form #form="ngForm" autocomplete="off"  (ngSubmit)="updateData(form)">
+  <div class="form-group" *ngFor="let field of fields">
+    <label [for]="field.name">{{ field.label }}</label>
+    <input
+      [type]="field.type"
+      class="form-control"
+      [id]="field.name"
+      [name]="field.name"
+      [(ngModel)]="formData[field.name]"
+      [placeholder]="field.placeholder"
+    />
+    <div class="alert alert-danger" *ngIf=" title === 'appointments'&& field.name === 'status' && !isStatusValid() ">
+      <p> Please Enter a Valid Status </p>
+    </div>
+</div>
+  <button class="btn btn-danger" type="submit">Confirm Updates</button>
+  </form>
