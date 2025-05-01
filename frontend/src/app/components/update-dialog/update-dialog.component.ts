@@ -97,8 +97,8 @@ export class UpdateDialogComponent implements OnInit{
       }
     }
 
-    const url$ = this.update_function(this.id, updatedData);
 
+    const url$ = this.update_function(this.id, updatedData);
     if (url$){
       url$.subscribe(
         (response: any) => {

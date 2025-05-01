@@ -1,7 +1,7 @@
 from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker, Session
-from core.security import hash_password
+from app.core.security import hash_password
 
 # Database setup
 DATABASE_URL = "sqlite:///./hospital.db"
@@ -20,8 +20,8 @@ def get_db():
 
 # create admin-user when database is initialized
 def create_admin_user():
-    from models.user import User
-    from models.admin import Admin
+    from app.models.user import User
+    from app.models.admin import Admin
 
     db: Session = SessionLocal()
 

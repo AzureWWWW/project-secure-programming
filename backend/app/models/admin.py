@@ -2,7 +2,7 @@
 
 from sqlalchemy import Column, Integer, String, Boolean,DateTime, ForeignKey
 from sqlalchemy.orm import relationship
-from database import Base
+from app.database import Base
 
 class Admin(Base):
     __tablename__ = "admin"

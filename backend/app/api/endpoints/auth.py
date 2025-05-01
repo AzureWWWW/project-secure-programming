@@ -3,15 +3,15 @@ from sqlalchemy.orm import Session
 from fastapi.security import OAuth2PasswordRequestForm
 from fastapi.security import OAuth2PasswordBearer
 
-from models.user import User
-from models.tokenBlacklist import TokenBlacklist
+from app.models.tokenBlacklist import TokenBlacklist
+from app.models.user import User
 
-from schemas.user import UserCreate
-from schemas.token import Token
-from core.security import hash_password, create_access_token, decode_token
-from core.config import settings
-from core.utils import authenticate_user, get_current_user, isNameValid, isEmailValid, isPhoneNumberValid 
-from database import get_db
+from app.schemas.user import UserCreate
+from app.schemas.token import Token
+from app.core.security import hash_password, create_access_token, decode_token
+from app.core.config import settings
+from app.core.utils import authenticate_user, get_current_user, isNameValid, isEmailValid, isPhoneNumberValid 
+from app.database import get_db
 from datetime import datetime, timedelta
 
 router = APIRouter()
@@ -31,23 +31,26 @@ def register(userData: UserCreate, db: Session = Depends(get_db)):
     hashed_password = hash_password(userData.password)
     if userData.first_name and userData.last_name:
         name = userData.first_name + ' '+ userData.last_name
-        if isNameValid(name) and isEmailValid(userData.email) and isPhoneNumberValid(userData.phone_number):
-            # create new user object
-            db_user = User(
-                first_name=userData.first_name,
-                last_name=userData.last_name,
-                username=userData.username, 
-                email=userData.email, 
-                hashed_password=hashed_password,
-                phone_number=userData.phone_number,
-                role = "user"
-            )
-                    # add new user to database
-            db.add(db_user)
-            db.commit()
-            db.refresh(db_user)
-            return {"message": "User Registered Successfully"}
-        # exceptions are raised within validation functions
+        if isNameValid(name):
+            if  isEmailValid(userData.email) and isPhoneNumberValid(userData.phone_number):
+                # create new user object
+                db_user = User(
+                    first_name=userData.first_name,
+                    last_name=userData.last_name,
+                    username=userData.username, 
+                    email=userData.email, 
+                    hashed_password=hashed_password,
+                    phone_number=userData.phone_number,
+                    role = "user"
+                )
+                        # add new user to database
+                db.add(db_user)
+                db.commit()
+                db.refresh(db_user)
+                return {"message": "User Registered Successfully"}
+            #exceptions are raised within these functions
+        else:
+            raise HTTPException(status_code=400, detail="Invalid Name")
 
     raise HTTPException(status_code=400, detail="Incomplete Name")
    

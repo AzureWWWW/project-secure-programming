@@ -5,7 +5,7 @@ from http.client import HTTPException
 from fastapi.security import OAuth2PasswordBearer
 from jose import jwt
 from jose import JWTError
-from core.config import settings
+from app.core.config import settings
 import bcrypt
 
 

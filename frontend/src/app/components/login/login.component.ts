@@ -20,13 +20,14 @@ export class LoginComponent {
   http = inject(HttpClient);
 
   onLogin(){
-  
+
     const headers = new HttpHeaders().set('Content-Type', 'application/x-www-form-urlencoded');
     const body = `username=${this.apiObj.username}&password=${this.apiObj.password}`;
 
     this.http.post("http://127.0.0.1:8000/auth/login/", body, { headers }).subscribe((res:any)=>{
       localStorage.setItem("token",res.access_token);
       this.router.navigateByUrl("/home")
+
     }, error=>{
       console.error("Login failed:", error);
       alert("Login failed");

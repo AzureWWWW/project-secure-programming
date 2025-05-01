@@ -15,12 +15,8 @@ export class UpdatePatientDialogComponent {
   title: string;
   func_call: any;
   id_name:string;
-  update_function = this.configService.update_patientData.bind(this.configService);
+  update_function = this.configService.update_patient_status_expiry.bind(this.configService);
   fields = [
-        { label: 'Patient Name', name: 'patient_name', type: 'text'},
-          { label: 'Username', name: 'username', type: 'text'},
-          { label: 'Email', name: 'email', type: 'text'},
-          { label: 'Phone Number', name: 'phone_number', type: 'text'},
           { label: 'Status Expiry', name: 'status_expiry', type: 'date'},
   ];
   constructor(@Inject(MAT_DIALOG_DATA) public data: any) {

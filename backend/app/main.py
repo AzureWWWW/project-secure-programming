@@ -1,6 +1,6 @@
 from fastapi import FastAPI
-from database import init_db
-from api.api_router import api_router
+from app.database import init_db
+from app.api.api_router import api_router
 
 from fastapi.middleware.cors import CORSMiddleware # to enable CORS
 

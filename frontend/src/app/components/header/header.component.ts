@@ -12,42 +12,51 @@ import { CommonModule } from '@angular/common';
 export class HeaderComponent implements OnInit {
   configService = inject(ConfigService);
   router = inject(Router);
-  
-  id = 1; //user_id
   role = "";
   isAdmin: boolean = false;
   isDoctor: boolean = false;
   isPatient: boolean = false;
   isUser: boolean = false;
   getRole(){
-    this.configService.getUserRole(this.id).subscribe(
+    this.configService.getUserRole().subscribe(
       (response:any) => {
         this.role = response;
+        if (this.role == "admin"){
+          this.isAdmin = true;
+        }
+        else if (this.role == "doctor"){
+          this.isDoctor = true;
+        }
+        else if (this.role == "patient"){
+          this.isPatient = true;
+        }
+        else{
+          this.isUser = true;
+        }
+
       },
       (error:any) => {
         console.error('Error fetching data:', error);
       }
     );
-    if (this.role == "admin"){
-      this.isAdmin = true;
-    }
-    else if (this.role == "doctor"){
-      this.isDoctor = true;
-    }
-    else if (this.role == "patient"){
-      this.isPatient = true;
-    }
-    else{
-      this.isUser = true;
-    }
 
   }
   ngOnInit(): void {
     this.getRole();
   }
   onLogOff(){
-    localStorage.removeItem("token");
-    this.router.navigateByUrl("login")
+
+    this.configService.logOut().subscribe(
+      (response: any) => {
+        localStorage.removeItem("token");
+        this.router.navigateByUrl("login");
+      },
+      (error: any) => {
+        alert(error.error.detail);
+        console.error('Error Fetching Data:', error);
+      }
+    );
+
   }
 
 }

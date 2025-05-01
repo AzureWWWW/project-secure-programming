@@ -1,13 +1,15 @@
-from fastapi import APIRouter, Depends, HTTPException, status
-from database import get_db
-from sqlalchemy.orm import Session
-from schemas.appointment import AppointmentCreate, AdminAppointmentUpdate, UserAppointmentUpdate
-from models.appointment import Appointment
-from models.user import User
-from .patients import get_patient_name_by_id, get_patient_id_by_Name, get_patient_id_by_user_id, isPatientValid
-from .doctors import get_doctor_name_by_id, get_doctor_id_by_Name, get_doctor_id_by_user_id, isDoctorValid
-from core.utils import Is_User_Valid, get_current_user, get_current_admin
 
+from fastapi import APIRouter, Depends, HTTPException, status
+from app.models.doctor import Doctor
+from app.database import get_db
+from sqlalchemy.orm import Session
+from app.schemas.appointment import AppointmentCreate, AdminAppointmentUpdate, UserAppointmentUpdate, getAvailableAppointment, patientAddAppointment
+from app.models.appointment import Appointment
+from app.models.user import User
+from app.api.endpoints.patients import get_patient_name_by_id, get_patient_id_by_Name, get_patient_id_by_user_id, isPatientValid, getPatientId
+from app.api.endpoints.doctors import get_all_doctors, get_doctor_name_by_id, get_doctor_id_by_Name, get_doctor_id_by_user_id, isDoctorValid, getDoctorId
+from app.core.utils import Is_User_Valid, get_current_user, get_current_admin
+from datetime import date, datetime, time
 router = APIRouter()
 
 allowed_status = ['SCHEDULED', 'CANCELLED', 'CONFIRMED', 'IN PROGRESS', 'COMPLETED', 'CONFIRMED']
@@ -28,51 +30,53 @@ def create_appointment(user_data: AppointmentCreate, db: Session = Depends(get_d
 
 
 @router.get("/getAllAppointments/")
-def get_all_appointments(db: Session = Depends(get_db)):
-    info = []
-    appointment_db = db.query(Appointment).all()
-    for appointment in appointment_db:
-        patient_name = get_patient_name_by_id(appointment.patient_id,db)
-        doctor_name = get_doctor_name_by_id(appointment.doctor_id,db)
-        app_data = {"appointment_id": appointment.appointment_id,
-                    "patient_name":patient_name,
-                    "doctor_name":doctor_name,
-                    "description":appointment.description,
-                    "date_time":appointment.date_time,
-                    "status": appointment.status }
-        info.append(app_data)
-
-    return info
-
-@router.get("/getDoctorAppointments/{id}")
-def getDoctorAppointments(id:int, db: Session = Depends(get_db)):
-    info = []
-    appointment_db = db.query(Appointment).all()
-    for appointment in appointment_db:
-        if appointment.doctor_id == id: 
-            patient_name = get_patient_name_by_id(appointment.doctor_id,db)
+def get_all_appointments(db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+    if current_user.role== "admin":
+        info = []
+        appointment_db = db.query(Appointment).all()
+        for appointment in appointment_db:
+            patient_name = get_patient_name_by_id(appointment.patient_id,db)
+            doctor_name = get_doctor_name_by_id(appointment.doctor_id,db)
             app_data = {"appointment_id": appointment.appointment_id,
-                            "patient_name":patient_name,
-                            "description":appointment.description,
-                            "date_time":appointment.date_time,
-                            "status": appointment.status }
+                        "patient_name":patient_name,
+                        "doctor_name":doctor_name,
+                        "description":appointment.description,
+                        "date_time":appointment.date_time,
+                        "status": appointment.status }
             info.append(app_data)
+
+        return info
+    raise HTTPException(status_code=404, detail="Administrator Privileges are Needed")
+
+@router.get("/getDoctorAppointments/")
+def getDoctorAppointments(db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+    doctor_id = getDoctorId(current_user.user_id, db)
+    info = []
+    appointment = db.query(Appointment).filter(Appointment.doctor_id == doctor_id).first()
+    patient_name = get_patient_name_by_id(doctor_id,db)
+    app_data = {"appointment_id": appointment.appointment_id,
+            "patient_name":patient_name,
+            "description":appointment.description,
+            "date_time":appointment.date_time,
+            "status": appointment.status}
+    info.append(app_data)
     return info
 
-@router.get("/getPatientAppointments/{id}")
-def getDoctorAppointments(id:int, db: Session = Depends(get_db)):
+
+@router.get("/getPatientAppointments/")
+def getPatientAppointments( db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+    patient_id = getPatientId(current_user.user_id, db)
     info = []
-    appointment_db = db.query(Appointment).all()
-    for appointment in appointment_db:
-        if appointment.patient_id == id: 
-            doctor_name = get_doctor_name_by_id(appointment.patient_id,db)
-            app_data = {"appointment_id": appointment.appointment_id,
-                            "doctor_name":doctor_name,
-                            "description":appointment.description,
-                            "date_time":appointment.date_time,
-                            "status": appointment.status }
-            info.append(app_data)
+    appointment = db.query(Appointment).filter(Appointment.patient_id == patient_id).first()
+    doctor_name = get_doctor_name_by_id(patient_id,db)
+    app_data = {"appointment_id": appointment.appointment_id,
+            "doctor_name":doctor_name,
+            "description":appointment.description,
+            "date_time":appointment.date_time,
+            "status": appointment.status }
+    info.append(app_data)
     return info
+
 
 @router.put("/adminUpdateAppointment/{id}")
 def admin_update_appointment(id:int, data: AdminAppointmentUpdate,
@@ -173,3 +177,91 @@ def deactivate_appointment(appointment_id:int, db: Session = Depends(get_db)):
     db.commit()
     db.refresh(appointment)
     return {"message": "Appointment Deactivated"}
+
+##### For new appointment #####
+time_slots = {
+    1: time(8, 0),   # 8:00 AM for Time Slot 1
+    2: time(11, 0),  # 11:00 AM for Time Slot 2
+    3: time(14, 0)   # 2:00 PM for Time Slot 3
+}
+
+
+def splitTimeToSlot(dateTimeObj: datetime):
+    time_part = dateTimeObj.time()
+
+    time_slot = None
+    for slot, time_for_slot in time_slots.items():
+        if time_part < time(8,0):
+            time_slot = 1
+        elif time_part >= time_for_slot and (time_part < time_slots.get(slot + 1, time(23, 59))):
+            time_slot = slot
+            break
+
+    return time_slot
+
+def combineDateTimeSlot(date: datetime, timeslot: int) -> datetime:
+    selected_time = time_slots.get(timeslot)
+    if not selected_time:
+        raise ValueError("Invalid timeslot selected.")
+    return datetime.combine(date, selected_time)
+
+@router.post("/getAvailableAppointment")
+def get_available_appointment(checkAvailableAppointment: getAvailableAppointment , db: Session = Depends(get_db)):
+    details = []
+
+    doctors_db = db.query(Doctor).filter(Doctor.doctor_specialty==checkAvailableAppointment.specialty).all()
+
+    for doctor in doctors_db:
+        doctor_name = get_doctor_name_by_id(doctor.doctor_id,db)
+        slot_available = {1: True, 2: True, 3: True}        # by default all 3 slots will be vacant
+        app_data = {
+            "doctor_name": doctor_name,
+            "time_slot": slot_available
+            }
+        
+        # query appointment based on doctor_id and the date 
+        appointments_db = db.query(Appointment).filter(Appointment.doctor_id == doctor.doctor_id,
+                                                    Appointment.date_time >= datetime.combine(checkAvailableAppointment.date, datetime.min.time()),  # Convert date to datetime
+                                                    Appointment.date_time < datetime.combine(checkAvailableAppointment.date, datetime.max.time())).all()
+    
+        if not appointments_db:     # if there is no appointment on that date, so 3 slots are vacant
+            details.append(app_data)
+            continue
+    
+        for appointment in appointments_db:     # if there is appointment on the date
+            slot = splitTimeToSlot(appointment.date_time)
+            if appointment.status != "CANCELLED":       # if the slot is not cancelled then it is reserved
+                slot_available[slot] = False
+        details.append(app_data)
+
+    info = {
+         "specilaty": checkAvailableAppointment.specialty,
+         "date": checkAvailableAppointment.date,
+         "details": details
+    }
+    return info
+
+@router.post("/patientCreateAppointment/")
+def create_appointment(user_data: patientAddAppointment, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+    if current_user.role == "patient":
+        patient_id = get_patient_id_by_user_id(current_user.user_id,db)
+    elif current_user.role == "doctor": # if doctor want to book appointment as a patient
+        patient_id = get_doctor_id_by_user_id(current_user.user_id,db)
+    doctor_id = get_doctor_id_by_Name(user_data.doctor_name,db)
+    date_time = combineDateTimeSlot(user_data.date, user_data.time_slot)
+    
+    # check if that slot is already reserved
+    appointments_db = db.query(Appointment).filter(Appointment.doctor_id == doctor_id,
+                                                    Appointment.date_time >= datetime.combine(user_data.date, datetime.min.time()),  # Convert date to datetime
+                                                    Appointment.date_time < datetime.combine(user_data.date, datetime.max.time())).all()
+    if appointments_db:
+        for appointment in appointments_db:
+            if splitTimeToSlot(appointment.date_time) == user_data.time_slot:
+                return {"message": "This time is reserved"}
+    
+    # create new appointment
+    new_appointment = Appointment(patient_id = patient_id, doctor_id= doctor_id, description = user_data.description, date_time =  date_time)
+    db.add(new_appointment)
+    db.commit()
+    db.refresh(new_appointment)
+    return {"message": "Appointment Successfully Added"}

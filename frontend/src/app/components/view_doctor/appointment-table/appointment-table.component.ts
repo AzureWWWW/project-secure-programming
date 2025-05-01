@@ -16,12 +16,10 @@ export class AppointmentTableComponent implements OnInit {
   constructor( public dialog: MatDialog) {}
   configService = inject(ConfigService);
 
-  // Id need to be passed
-  id = 1; // doctor_id
 
   UpdateAppointmentDialogComponent = UpdateAppointmentDialogComponent;
   id_name = "appointment_id";
-  func_call = this.configService.getDoctorAppointments(this.id);
+  func_call = this.configService.getDoctorAppointments();
 
   columns: string[] = ['actions', 'patient_name', 'date','time', 'description', 'status'];
   filteredData: Appointment[] = [];
@@ -29,7 +27,7 @@ export class AppointmentTableComponent implements OnInit {
 
   // get all doctor appointments data
   getAppointments(){
-    this.configService.getDoctorAppointments(this.id).subscribe(
+    this.configService.getDoctorAppointments().subscribe(
       (response) => {
         this.filteredData = response;
       },

@@ -11,16 +11,13 @@ import { UpdateAppointmentDialogComponent } from '../update-appointment-dialog/u
   templateUrl: './appointment-table.component.html',
   styleUrl: './appointment-table.component.css'
 })
+
 export class AppointmentTableComponent implements OnInit {
   constructor( public dialog: MatDialog) {}
     configService = inject(ConfigService);
-
-    // Id need to be passed
-    id = 1; // patient_id
-
     UpdateAppointmentDialogComponent = UpdateAppointmentDialogComponent;
     id_name = "appointment_id";
-    func_call = this.configService.getPatientAppointments(this.id);
+    func_call = this.configService.getPatientAppointments();
 
     columns: string[] = ['actions', 'doctor_name', 'date','time', 'description', 'status'];
     filteredData: Appointment[] = [];
@@ -28,7 +25,7 @@ export class AppointmentTableComponent implements OnInit {
 
     // get all patient appointments data
     getAppointments(){
-      this.configService.getPatientAppointments(this.id).subscribe(
+      this.configService.getPatientAppointments().subscribe(
         (response) => {
           this.filteredData = response;
         },

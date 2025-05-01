@@ -3,15 +3,15 @@
 from fastapi import Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from jose import JWTError, jwt
-from core.security import verify_password, oauth2_scheme
-from database import get_db
-from models.user import User
-from models.patient import Patient
-from models.admin import Admin
-from models.doctor import Doctor
-from models.tokenBlacklist import TokenBlacklist
-from core.config import settings
-from schemas.token import TokenData
+from app.core.security import verify_password, oauth2_scheme
+from app.database import get_db
+from app.models.user import User
+from app.models.patient import Patient
+from app.models.admin import Admin
+from app.models.doctor import Doctor
+from app.models.tokenBlacklist import TokenBlacklist
+from app.core.config import settings
+from app.schemas.token import TokenData
 import re
 
 # Get user from database using username as input
@@ -116,10 +116,11 @@ def getValidUser(user_id: int, db: Session = Depends(get_db)):
     raise HTTPException(status_code=404, detail="User Not Found")
 
 def isNameValid(name: str):
+    
     if len(name.split(' ')) == 2 :
         if name.split(' ')[0].isalpha() and name.split(' ')[1].isalpha() :
             return True
-    raise HTTPException(status_code=400, detail="Invalid Name")
+    raise False
 
 def isEmailValid(email: str):
     if re.match(r'^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$', email):

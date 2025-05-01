@@ -3,15 +3,15 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from datetime import datetime, timezone
-from database import get_db
-from models.user import User
-from models.patient import Patient
-from models.doctor import Doctor
-from models.admin import Admin
-from models.appointment import Appointment
-from schemas.admin import RoleUpdate
-from schemas.user import UserUpdate
-from core.utils import get_current_admin, getValidUser
+from app.database import get_db
+from app.models.user import User
+from app.models.patient import Patient
+from app.models.doctor import Doctor
+from app.models.admin import Admin
+from app.models.appointment import Appointment
+from app.schemas.admin import RoleUpdate
+from app.schemas.user import UserUpdate
+from app.core.utils import get_current_admin, getValidUser
 
 router = APIRouter()
 

@@ -10,6 +10,7 @@ import { ConfigService } from '../../../services/config.service';
   templateUrl: './update-appointment-dialog.component.html',
   styleUrl: './update-appointment-dialog.component.css'
 })
+
 export class UpdateAppointmentDialogComponent {
   configService = inject(ConfigService);
   id: number;

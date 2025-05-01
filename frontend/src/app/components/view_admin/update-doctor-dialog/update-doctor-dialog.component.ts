@@ -16,12 +16,8 @@ export class UpdateDoctorDialogComponent implements OnInit {
   title: string;
   func_call: any;
   id_name:string;
-  update_function = this.configService.update_doctorData.bind(this.configService);
+  update_function = this.configService.update_doctor_status_expiry.bind(this.configService);
   fields = [
-        { label: 'Full Name', name: 'full_name', type: 'text'},
-          { label: 'Username', name: 'username', type: 'text'},
-          { label: 'Email', name: 'email', type: 'text'},
-          { label: 'Phone Number', name: 'phone_number', type: 'text'},
           { label: 'Status Expiry', name: 'status_expiry', type: 'date'},
   ];
   constructor(@Inject(MAT_DIALOG_DATA) public data: any) {

@@ -3,6 +3,7 @@ import { FormsModule, NgForm } from '@angular/forms';
 import { ConfigService } from '../services/config.service';
 import {CommonModule } from '@angular/common';
 import { Doctor } from '../models/doctor';
+import { Router } from '@angular/router';
 @Component({
   selector: 'app-my-profile',
   imports: [FormsModule, CommonModule],
@@ -11,7 +12,8 @@ import { Doctor } from '../models/doctor';
 })
 export class MyProfileComponent implements OnInit{
   configService = inject(ConfigService);
-  user_id = 2;
+  router = inject(Router);
+
   fields: any[] = [
     { label: 'First Name', name: 'first_name', type: 'text' },
     { label: 'Last Name', name: 'last_name', type: 'text' },
@@ -40,6 +42,8 @@ export class MyProfileComponent implements OnInit{
         (response: any) => {
           this.SourceData = response;
           this.getUserData();
+          alert("Profile Successfully Updated");
+          this.router.navigateByUrl("/home");
 
         },
         (error: any) => {
@@ -50,7 +54,7 @@ export class MyProfileComponent implements OnInit{
     }
   }
   getUserData(){
-    this.configService.getUserInfo(this.user_id).subscribe(
+    this.configService.getUserInfo().subscribe(
         (response) => {
           this.SourceData = response;
           if ('doctor_specialty' in response) {

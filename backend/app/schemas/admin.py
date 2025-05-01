@@ -1,7 +1,7 @@
 # includes pydantic models
 
 from pydantic import BaseModel
-from schemas.user import UserCreate    
+from app.schemas.user import UserCreate    
 
 class AdminUser(UserCreate):
     is_admin: bool

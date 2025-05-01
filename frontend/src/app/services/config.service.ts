@@ -15,6 +15,9 @@ import { User } from '../models/user';
 export class ConfigService {
 
   private config: any;
+
+  token = localStorage.getItem("token");
+
   constructor(private http: HttpClient){
     this.config = {
       "base_url": "http://localhost:8000/",
@@ -26,8 +29,8 @@ export class ConfigService {
     return this.config.base_url
   }
 
-  getUserRole(id: number): Observable<any>{
-    const appointment_url =`${this.config.base_url}users/getUserRole/${id}`;
+  getUserRole(): Observable<any>{
+    const appointment_url =this.config.base_url+ 'users/getUserRole/';
     return this.http.get(appointment_url);
   }
 
@@ -51,10 +54,15 @@ export class ConfigService {
     return this.http.get(patient_url);
   }
 
-  // update patients data
-  update_patientData(id: number, updatedPatient: Patient): Observable<any>{
-    const patient_url = `${this.config.base_url}patients/updatePatient/${id}`;
-    return this.http.put(patient_url, updatedPatient);
+  // update patient's status expiry
+  update_patient_status_expiry(patient_id: number, updatedPatient: Patient): Observable<any>{
+    const patient_url = `${this.config.base_url}patients/update_patient_status_expiry/?patient_id=${patient_id}`;
+    return this.http.put(patient_url, updatedPatient, {
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${this.token}`
+      }
+    });
   }
   // get all patients history
   getDoctorData(): Observable<any>{
@@ -62,25 +70,25 @@ export class ConfigService {
     return this.http.get(doctor_url);
   }
 
-  // update patients data
-  update_doctorData(id: number, updatedDoctor: Doctor): Observable<any>{
-    const doctor_url = `${this.config.base_url}doctors/updateDoctor/${id}`;
+  // update doctor's status expiry
+  update_doctor_status_expiry(doctor_id: number, updatedDoctor: Doctor): Observable<any>{
+    const doctor_url = `${this.config.base_url}doctors/update_doctor_status_expiry/?doctor_id=${doctor_id}`;
     return this.http.put(doctor_url, updatedDoctor);
   }
 
   // ****************** Doctor View & Patient View ******************
 
   // get a doctor appointments
-  getDoctorAppointments(id: number): Observable<any>{
+  getDoctorAppointments(): Observable<any>{
     // We are passing the doctor_id
-    const doctor_url = `${this.config.base_url}appointments/getDoctorAppointments/${id}`;
+    const doctor_url = this.config.base_url+ 'appointments/getDoctorAppointments/';
     return this.http.get(doctor_url);
   }
 
   // get a patient appointments
-  getPatientAppointments(id: number): Observable<any>{
+  getPatientAppointments(): Observable<any>{
     // We are passing the patient_id
-    const doctor_url = `${this.config.base_url}appointments/getPatientAppointments/${id}`;
+    const doctor_url = this.config.base_url + 'appointments/getPatientAppointments/';
     return this.http.get(doctor_url);
   }
 
@@ -90,13 +98,17 @@ export class ConfigService {
     return this.http.put(appointment_url, updatedAppointment);
   }
 
-  getUserInfo(user_id: number): Observable<any>{
-    const user_url = `${this.config.base_url}users/getUserInfo/${user_id}`;
+  getUserInfo(): Observable<any>{
+    const user_url = this.config.base_url +'users/getUserInfo/';
     return this.http.get(user_url);
   }
   update_my_profile(updatedProfile: Doctor):Observable<any>{
     const user_url = this.config.base_url + "users/updateMyProfile/";
     return this.http.put(user_url, updatedProfile);
+  }
+  logOut():Observable<any>{
+    const user_url = this.config.base_url + "auth/logout/";
+    return this.http.post(user_url,{});
   }
 
 }

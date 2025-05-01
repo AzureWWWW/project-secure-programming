@@ -1,5 +1,7 @@
 from datetime import datetime
-from schemas.user import UserCreate, UserUpdate
+
+from pydantic import BaseModel
+from app.schemas.user import UserCreate, UserUpdate
 
 class DoctorUser(UserCreate):
     user_id: int
@@ -8,5 +10,5 @@ class DoctorUser(UserCreate):
 # class DoctorUpdate(UserUpdate):
 #     doctor_specialty: str
     
-class AdminUpdateDoctor(UserUpdate):
+class AdminUpdateDoctor(BaseModel):
     status_expiry : datetime = None
